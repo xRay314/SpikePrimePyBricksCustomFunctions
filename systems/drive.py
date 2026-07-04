@@ -6,7 +6,7 @@ from controls.pid import PID_control
 from controls.constants import gyro_move_values, line_follow_values, mmPerDegree
 
 class moveSys:
-    def __init__(self, hub, right_drive_motor, left_drive_motor, right_line_sensor, left_line_sensor):
+    def __init__(self, hub, right_drive_motor, left_drive_motor, right_line_sensor=None, left_line_sensor=None, line_sensor=None, side=None):
         #Setup Hub
         self.hub = hub
 
@@ -21,6 +21,8 @@ class moveSys:
         #Setup Line Sensors
         self.rightSensor = right_line_sensor
         self.leftSennsor = left_line_sensor
+        self.lineSensor = line_sensor
+        self.side = side
 
         #Setup Gyro for PID
         self.gyro_pid = PID_control(
@@ -124,7 +126,7 @@ class moveSys:
                     self.left.dc(self.speed*motorSplit)
 
 
-    def line_follow(self, distance, lowSpeed, highSpeed, ratio, accel=False, decel=False):
+    def line_follow_distance(self, distance, lowSpeed, highSpeed, ratio, accel=False, decel=False):
         self.reset_angles()
         self.line_follow_pid.reset()
 
@@ -152,3 +154,19 @@ class moveSys:
             self.correction=self.gyro_pid.compute(self.leftSennsor.reflection(), self.rightSennsor.reflection())
             self.right.dc(self.speed+self.correction)
             self.left.dc(self.speed-self.correction)
+            
+    def line_follow_color(self, speed, color=Color.BLACK)
+        self.line_follow_pid.reset()
+        self.speed = speed
+        
+        while self.rightSensor.color() != color and self.leftSensor != color:
+            if self.lineSensor != None:
+                self.correction=self.gyro_pid.compute(self.leftSennsor.reflection() - self.rightSennsor.reflection())
+            elif self.side == 'R':
+                self.correction=self.gro_pid.compute(self.lineSensor.reflection()-50)
+            elif self.side == 'L'
+                self.correction=self.gro_pid.compute(50-self.lineSensor.reflection())
+            self.right.dc(self.speed+self.correction)
+            self.left.dc(self.speed-self.correction)
+            
+            
