@@ -3,7 +3,7 @@ from pybricks.parameters import Direction, Port, Axis, Color
 from pybricks.pupdevices import ColorSensor, Motor
 
 from controls.pid import PID_control
-from controls.constants import gyro_move_values, line_follow_values, mmPerDegree
+from controls.constants import gyro_move_values, line_follow_values, line_follow_reflection, mmPerDegree
 
 class moveSys:
     def __init__(self, hub, right_drive_motor, left_drive_motor, right_line_sensor=None, left_line_sensor=None, line_sensor=None, side=None):
@@ -23,6 +23,7 @@ class moveSys:
         self.leftSennsor = left_line_sensor
         self.lineSensor = line_sensor
         self.side = side
+    
 
         #Setup Gyro for PID
         self.gyro_pid = PID_control(
@@ -143,30 +144,45 @@ class moveSys:
             self.travelled_distance_MM = self.tDistance(True)
             self.distance_remaining_MM = self.total_distance_MM - self.travelled_distance_MM
 
+            #Speed Control
             if accel == True and self.travelled_distance <= self.accelDistance:
                 self.speed = lowSpeed+(highSpeed-lowSpeed)*(self.travelled_distance/self.accelDistance) 
             elif decel == True and self.travelled_distance >= self.decelDistance:
                 self.speed = lowSpeed-(highSpeed-lowSpeed)*(self.remaining_distance/self.accelDistance)
             else :
                 self.speed = lowSpeed
+            #Get correction
+            if self.lineSensor != None:
+                self.correction=self.gyro_pid.compute(self.leftSennsor.reflection() - self.rightSennsor.reflection())
+            elif self.side == 'R':
+                self.correction=self.gro_pid.compute(self.lineSensor.reflection()-line_follow_reflection)
+            elif self.side == 'L'
+                self.correction=self.gro_pid.compute(line_follow_reflection-self.lineSensor.reflection())
 
-            
-            self.correction=self.gyro_pid.compute(self.leftSennsor.reflection(), self.rightSennsor.reflection())
+            #Update Speed
             self.right.dc(self.speed+self.correction)
             self.left.dc(self.speed-self.correction)
             
     def line_follow_color(self, speed, color=Color.BLACK)
         self.line_follow_pid.reset()
         self.speed = speed
+
         
         while self.rightSensor.color() != color and self.leftSensor != color:
+
+            #Get Correction
             if self.lineSensor != None:
                 self.correction=self.gyro_pid.compute(self.leftSennsor.reflection() - self.rightSennsor.reflection())
             elif self.side == 'R':
-                self.correction=self.gro_pid.compute(self.lineSensor.reflection()-50)
+                self.correction=self.gro_pid.compute(self.lineSensor.reflection()-line_follow_reflection)
             elif self.side == 'L'
-                self.correction=self.gro_pid.compute(50-self.lineSensor.reflection())
+                self.correction=self.gro_pid.compute(line_follow_reflection-self.lineSensor.reflection())
+
+            #Control Speed
             self.right.dc(self.speed+self.correction)
             self.left.dc(self.speed-self.correction)
-            
+    
+
+
+
             
