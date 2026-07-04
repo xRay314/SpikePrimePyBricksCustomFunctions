@@ -17,6 +17,7 @@ class PID_control:
         self.integral = 0
         self.derivative = 0
         self.last_error = 0
+        self.error = 0
 
         self.integral_limit = integral_limit
 
@@ -28,15 +29,15 @@ class PID_control:
         self.derivative = 0
         self.last_error = 0
 
-    def compute(self, error1, error2):
+    def compute(self, error):
         # Calculate Error
-        error = error1 - error2
+        self.error = error
 
         # Proportional
-        self.proportional = error
+        self.proportional = self.error
 
         # Integral
-        self.integral += error
+        self.integral += self.error
 
         #Clamp Integral
         if self.integral_limit is not None and abs(self.integral) > self.integral_limit:
@@ -44,8 +45,8 @@ class PID_control:
             
 
         # Derivative
-        derivative = error - self.last_error
-        self.last_error = error
+        derivative = self.error - self.last_error
+        self.last_error = self.error
 
         # PID Output
         output = (
