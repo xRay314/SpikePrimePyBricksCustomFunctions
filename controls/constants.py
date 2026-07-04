@@ -13,5 +13,7 @@ line_follow_values = PID_values(
     kd=0,
     iLimit=100)
 
+line_follow_reflection = 60
+
 wheel_diameter = 62.4
 mmPerDegree = (pi * wheel_diameter) / 360
